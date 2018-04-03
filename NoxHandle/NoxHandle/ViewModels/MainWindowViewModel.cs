@@ -68,68 +68,30 @@ namespace NoxHandle.ViewModels
          * 自動的にUIDispatcher上での通知に変換されます。変更通知に際してUIDispatcherを操作する必要はありません。
          */
 
-        public ReactiveProperty<ImageSource> Img { get; } = new ReactiveProperty<ImageSource>();
-        public ReactiveCommand CaptureButton { get; }
-        public string InputBox { get; set; }
-
-        public MainWindowViewModel()
-        {
-            CaptureButton = new ReactiveCommand();
-            CaptureButton.Subscribe(CaptureButtonOnClick);
-        }
+        public ReactiveProperty<string> WindowTitle { get; } = new ReactiveProperty<string>();
+        public ReactiveCollection<string> WindowTitleCollection { get; } = new ReactiveCollection<string>();
+        public ReactiveCommand StartCaptureCommand { get; } = new ReactiveCommand();
+        public ReactiveProperty<ImageSource> SourceImage { get; } = new ReactiveProperty<ImageSource>();
+        public ReactiveProperty<ImageSource> ProcessedImage { get; } = new ReactiveProperty<ImageSource>();
 
         public void Initialize()
         {
-            IObservable<Bitmap> observable = new WindowCapture("くろにゃ", WindowCapture.Fps30);
+            StartCaptureCommand.Subscribe(StartCapture);
+
+            WindowTitleCollection.AddOnScheduler("くろにゃ");
+            WindowTitleCollection.AddOnScheduler("無題 - メモ帳");
+        }
+
+        private void StartCapture()
+        {
+            IObservable<Bitmap> observable = new WindowCapture(WindowTitle.Value, WindowCapture.Fps30);
             observable.Subscribe(img =>
             {
                 img.Binalize(250);
                 DispatcherHelper.UIDispatcher.Invoke(() =>
                 {
-                    Img.Value = WindowCapture.ToImageSource(img);
+                    ProcessedImage.Value = WindowCapture.ToImageSource(img);
                 });
-            });
-        }
-
-        public void CaptureButtonOnClick()
-        {
-            IntPtr hWnd = FindWindowEx(IntPtr.Zero, IntPtr.Zero, null, InputBox);
-            IntPtr hDC = GetDCEx(hWnd, IntPtr.Zero, DeviceContextValues.Window);
-            IntPtr compDC = CreateCompatibleDC(hDC);
-
-            GetWindowRect(hWnd, out RECT rect);
-            int width = rect.right - rect.left;
-            int height = rect.bottom - rect.top;
-
-            Bitmap bmp = new Bitmap(width, height);
-
-            Task.Run(() =>
-            {
-                for (; ; )
-                {
-                    using (Graphics g = Graphics.FromImage(bmp))
-                    {
-                        BitBlt(
-                            g.GetHdc(), 0, 0, bmp.Width, bmp.Height,
-                            hDC, 0, 0, TernaryRasterOperations.SRCCOPY);
-                    }
-
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        bmp.Save(ms, ImageFormat.Png);
-                        ms.Position = 0;
-
-                        DispatcherHelper.UIDispatcher.Invoke(() =>
-                        {
-                            BitmapImage image = new BitmapImage();
-                            image.BeginInit();
-                            image.StreamSource = ms;
-                            image.CacheOption = BitmapCacheOption.OnLoad;
-                            image.EndInit();
-                            Img.Value = image;
-                        });
-                    }
-                }
             });
         }
     }
