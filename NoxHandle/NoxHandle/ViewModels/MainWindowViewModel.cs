@@ -21,6 +21,7 @@ using System.Drawing.Imaging;
 using System.Windows.Media.Imaging;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
+using System.Diagnostics;
 
 namespace NoxHandle.ViewModels
 {
@@ -77,9 +78,16 @@ namespace NoxHandle.ViewModels
         public void Initialize()
         {
             StartCaptureCommand.Subscribe(StartCapture);
+            
+            foreach (var p in Process.GetProcesses())
+            {
+                if (string.IsNullOrWhiteSpace(p.MainWindowTitle))
+                {
+                    continue;
+                }
 
-            WindowTitleCollection.AddOnScheduler("くろにゃ");
-            WindowTitleCollection.AddOnScheduler("無題 - メモ帳");
+                WindowTitleCollection.AddOnScheduler(p.MainWindowTitle);
+            }
         }
 
         private void StartCapture()
@@ -87,7 +95,7 @@ namespace NoxHandle.ViewModels
             IObservable<Bitmap> observable = new WindowCapture(WindowTitle.Value, WindowCapture.Fps30);
             observable.Subscribe(img =>
             {
-                img.Binalize(250);
+                //img.Binalize(250);
                 DispatcherHelper.UIDispatcher.Invoke(() =>
                 {
                     ProcessedImage.Value = WindowCapture.ToImageSource(img);
