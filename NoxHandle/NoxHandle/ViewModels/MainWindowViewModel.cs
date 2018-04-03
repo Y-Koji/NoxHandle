@@ -74,6 +74,7 @@ namespace NoxHandle.ViewModels
         public ReactiveCommand StartCaptureCommand { get; } = new ReactiveCommand();
         public ReactiveProperty<ImageSource> SourceImage { get; } = new ReactiveProperty<ImageSource>();
         public ReactiveProperty<ImageSource> ProcessedImage { get; } = new ReactiveProperty<ImageSource>();
+        public ReactiveProperty<bool> IsBinalize { get; } = new ReactiveProperty<bool>();
 
         public void Initialize()
         {
@@ -95,7 +96,11 @@ namespace NoxHandle.ViewModels
             IObservable<Bitmap> observable = new WindowCapture(WindowTitle.Value, WindowCapture.Fps30);
             observable.Subscribe(img =>
             {
-                //img.Binalize(250);
+                if (IsBinalize.Value)
+                {
+                    img.Binalize(250);
+                }
+
                 DispatcherHelper.UIDispatcher.Invoke(() =>
                 {
                     ProcessedImage.Value = WindowCapture.ToImageSource(img);
