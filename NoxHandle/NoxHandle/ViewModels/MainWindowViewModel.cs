@@ -69,6 +69,14 @@ namespace NoxHandle.ViewModels
          */
 
         public ReactiveProperty<ImageSource> Img { get; } = new ReactiveProperty<ImageSource>();
+        public ReactiveCommand CaptureButton { get; }
+        public string InputBox { get; set; }
+
+        public MainWindowViewModel()
+        {
+            CaptureButton = new ReactiveCommand();
+            CaptureButton.Subscribe(CaptureButtonOnClick);
+        }
 
         public void Initialize()
         {
@@ -80,6 +88,48 @@ namespace NoxHandle.ViewModels
                 {
                     Img.Value = WindowCapture.ToImageSource(img);
                 });
+            });
+        }
+
+        public void CaptureButtonOnClick()
+        {
+            IntPtr hWnd = FindWindowEx(IntPtr.Zero, IntPtr.Zero, null, InputBox);
+            IntPtr hDC = GetDCEx(hWnd, IntPtr.Zero, DeviceContextValues.Window);
+            IntPtr compDC = CreateCompatibleDC(hDC);
+
+            GetWindowRect(hWnd, out RECT rect);
+            int width = rect.right - rect.left;
+            int height = rect.bottom - rect.top;
+
+            Bitmap bmp = new Bitmap(width, height);
+
+            Task.Run(() =>
+            {
+                for (; ; )
+                {
+                    using (Graphics g = Graphics.FromImage(bmp))
+                    {
+                        BitBlt(
+                            g.GetHdc(), 0, 0, bmp.Width, bmp.Height,
+                            hDC, 0, 0, TernaryRasterOperations.SRCCOPY);
+                    }
+
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        bmp.Save(ms, ImageFormat.Png);
+                        ms.Position = 0;
+
+                        DispatcherHelper.UIDispatcher.Invoke(() =>
+                        {
+                            BitmapImage image = new BitmapImage();
+                            image.BeginInit();
+                            image.StreamSource = ms;
+                            image.CacheOption = BitmapCacheOption.OnLoad;
+                            image.EndInit();
+                            Img.Value = image;
+                        });
+                    }
+                }
             });
         }
     }

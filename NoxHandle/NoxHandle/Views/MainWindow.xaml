@@ -33,6 +33,14 @@
     </i:Interaction.Triggers>
     
     <Grid>
-        <Image Source="{Binding Img.Value}" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="6*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBox MinWidth="100" MinHeight="30" Text="{Binding Path=InputBox, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="キャプチャ開始" Command="{Binding Path=CaptureButton}"/>
+        </StackPanel>
+        <Image Source="{Binding Img.Value}" Grid.Row="1" />
     </Grid>
 </Window>
