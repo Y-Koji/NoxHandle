@@ -20,6 +20,7 @@ using System.Windows.Media;
 using System.Drawing.Imaging;
 using System.Windows.Media.Imaging;
 using System.Threading.Tasks;
+using System.Reactive.Linq;
 
 namespace NoxHandle.ViewModels
 {
@@ -71,43 +72,14 @@ namespace NoxHandle.ViewModels
 
         public void Initialize()
         {
-            IntPtr hWnd = FindWindowEx(IntPtr.Zero, IntPtr.Zero, null, "くろにゃ");
-            IntPtr hDC = GetDCEx(hWnd, IntPtr.Zero, DeviceContextValues.Window);
-            IntPtr compDC = CreateCompatibleDC(hDC);
-
-            GetWindowRect(hWnd, out RECT rect);
-            int width = rect.right - rect.left;
-            int height = rect.bottom - rect.top;
-
-            Bitmap bmp = new Bitmap(width, height);
-
-            Task.Run(() =>
+            IObservable<Bitmap> observable = new WindowCapture("くろにゃ", WindowCapture.Fps30);
+            observable.Subscribe(img =>
             {
-                for (; ;)
+                img.Binalize(250);
+                DispatcherHelper.UIDispatcher.Invoke(() =>
                 {
-                    using (Graphics g = Graphics.FromImage(bmp))
-                    {
-                        BitBlt(
-                            g.GetHdc(), 0, 0, bmp.Width, bmp.Height,
-                            hDC, 0, 0, TernaryRasterOperations.SRCCOPY);
-                    }
-
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        bmp.Save(ms, ImageFormat.Png);
-                        ms.Position = 0;
-                        
-                        DispatcherHelper.UIDispatcher.Invoke(() =>
-                        {
-                            BitmapImage image = new BitmapImage();
-                            image.BeginInit();
-                            image.StreamSource = ms;
-                            image.CacheOption = BitmapCacheOption.OnLoad;
-                            image.EndInit();
-                            Img.Value = image;
-                        });
-                    }
-                }
+                    Img.Value = WindowCapture.ToImageSource(img);
+                });
             });
         }
     }

@@ -99,10 +99,13 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\DeviceContextValues.cs" />
+    <Compile Include="Models\Extensions\RectExtension.cs" />
+    <Compile Include="Models\ImageProcess.cs" />
     <Compile Include="Models\Model.cs" />
     <Compile Include="Models\RECT.cs" />
     <Compile Include="Models\TernaryRasterOperations.cs" />
     <Compile Include="Models\WinAPI.cs" />
+    <Compile Include="Models\WindowCapture.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
