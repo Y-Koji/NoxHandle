@@ -71,14 +71,17 @@ namespace NoxHandle.ViewModels
 
         public ReactiveProperty<string> WindowTitle { get; } = new ReactiveProperty<string>();
         public ReactiveCollection<string> WindowTitleCollection { get; } = new ReactiveCollection<string>();
-        public ReactiveCommand StartCaptureCommand { get; } = new ReactiveCommand();
+        public ReactiveProperty<bool> IsCapturing { get; } = new ReactiveProperty<bool>();
+        public ReactiveProperty<string> CaptureButtonText { get; set; } = new ReactiveProperty<string>("キャプチャ開始");
+        public ReactiveCommand CaptureCommand { get; } = new ReactiveCommand();
         public ReactiveProperty<ImageSource> SourceImage { get; } = new ReactiveProperty<ImageSource>();
         public ReactiveProperty<ImageSource> ProcessedImage { get; } = new ReactiveProperty<ImageSource>();
         public ReactiveProperty<bool> IsBinalize { get; } = new ReactiveProperty<bool>();
+        protected WindowCapture WindowCapture { get; set; }
 
         public void Initialize()
         {
-            StartCaptureCommand.Subscribe(StartCapture);
+            CaptureCommand.Subscribe(StartCapture);
             
             foreach (var p in Process.GetProcesses())
             {
@@ -93,8 +96,17 @@ namespace NoxHandle.ViewModels
 
         private void StartCapture()
         {
-            IObservable<Bitmap> observable = new WindowCapture(WindowTitle.Value, WindowCapture.Fps30);
-            observable.Subscribe(img =>
+            if (!IsCapturing.Value)
+            {
+                CaptureButtonText.Value = "キャプチャ開始";
+                WindowCapture?.Dispose();
+                return;
+            }
+
+            CaptureButtonText.Value = "キャプチャ停止";
+
+            WindowCapture = new WindowCapture(WindowTitle.Value, WindowCapture.Fps30);
+            WindowCapture.Subscribe(img =>
             {
                 if (IsBinalize.Value)
                 {

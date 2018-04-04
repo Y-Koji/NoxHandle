@@ -26,6 +26,8 @@ namespace NoxHandle.Models
         public RECT Rect { get; private set; }
         public Bitmap Bitmap { get; private set; }
 
+        public IDisposable Timer { get; }
+
         public static TimeSpan Fps60 => TimeSpan.FromMilliseconds(1000 / 60);
         public static TimeSpan Fps30 => TimeSpan.FromMilliseconds(1000 / 30);
 
@@ -40,7 +42,7 @@ namespace NoxHandle.Models
             Rect = rect;
             Bitmap = new Bitmap(rect.GetWidth(), rect.GetHeight());
 
-            Observable.Timer(TimeSpan.FromSeconds(0), interval).Subscribe(_ => Tick());
+            Timer = Observable.Timer(TimeSpan.FromSeconds(0), interval).Subscribe(_ => Tick());
         }
 
         private void Tick()
@@ -88,6 +90,7 @@ namespace NoxHandle.Models
 
         public void Dispose()
         {
+            Timer.Dispose();
             Subject.OnCompleted();
         }
     }
