@@ -47,7 +47,7 @@
             <ComboBox Grid.Column="0" IsEditable="True"
                       ItemsSource="{Binding WindowTitleCollection}" 
                       Text="{Binding WindowTitle.Value}" />
-            <Button Grid.Column="1" Content="キャプチャ開始" Command="{Binding StartCaptureCommand}" />
+            <ToggleButton Grid.Column="1" Content="{Binding CaptureButtonText.Value}" Command="{Binding CaptureCommand}" IsChecked="{Binding IsCapturing.Value}" />
             <ToggleButton Grid.Column="2" Content="2値化" IsChecked="{Binding IsBinalize.Value}" />
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
