@@ -69,8 +69,8 @@ namespace NoxHandle.ViewModels
          * 自動的にUIDispatcher上での通知に変換されます。変更通知に際してUIDispatcherを操作する必要はありません。
          */
 
-        public ReactiveProperty<string> WindowTitle { get; } = new ReactiveProperty<string>();
-        public ReactiveCollection<string> WindowTitleCollection { get; } = new ReactiveCollection<string>();
+        public ReactiveProperty<string> FindWindowTitle { get; } = new ReactiveProperty<string>();
+        public ReactiveCollection<string> FindWindowTitleCollection { get; } = new ReactiveCollection<string>();
         public ReactiveProperty<bool> IsCapturing { get; } = new ReactiveProperty<bool>();
         public ReactiveCommand StartCaptureCommand { get; } = new ReactiveCommand();
         public ReactiveCommand StopCaptureCommand { get; } = new ReactiveCommand();
@@ -91,7 +91,7 @@ namespace NoxHandle.ViewModels
                     continue;
                 }
 
-                WindowTitleCollection.AddOnScheduler(p.MainWindowTitle);
+                FindWindowTitleCollection.AddOnScheduler(p.MainWindowTitle);
             }
         }
 
@@ -99,7 +99,7 @@ namespace NoxHandle.ViewModels
         {
             StopCapture();
 
-            WindowCapture = new WindowCapture(WindowTitle.Value, WindowCapture.Fps30);
+            WindowCapture = new WindowCapture(FindWindowTitle.Value, WindowCapture.Fps30);
             WindowCapture.Subscribe(OnNextBitmap, OnErrorBitmap, OnCompleteBitmap);
         }
 
