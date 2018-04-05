@@ -72,7 +72,8 @@ namespace NoxHandle.ViewModels
         public ReactiveProperty<string> WindowTitle { get; } = new ReactiveProperty<string>();
         public ReactiveCollection<string> WindowTitleCollection { get; } = new ReactiveCollection<string>();
         public ReactiveProperty<bool> IsCapturing { get; } = new ReactiveProperty<bool>();
-        public ReactiveCommand CaptureCommand { get; } = new ReactiveCommand();
+        public ReactiveCommand StartCaptureCommand { get; } = new ReactiveCommand();
+        public ReactiveCommand StopCaptureCommand { get; } = new ReactiveCommand();
         public ReactiveProperty<ImageSource> SourceImage { get; } = new ReactiveProperty<ImageSource>();
         public ReactiveProperty<ImageSource> ProcessedImage { get; } = new ReactiveProperty<ImageSource>();
         public ReactiveProperty<bool> IsBinalize { get; } = new ReactiveProperty<bool>();
@@ -80,8 +81,9 @@ namespace NoxHandle.ViewModels
 
         public void Initialize()
         {
-            CaptureCommand.Subscribe(StartCapture);
-            
+            StartCaptureCommand.Subscribe(StartCapture);
+            StopCaptureCommand.Subscribe(StopCapture);
+
             foreach (var p in Process.GetProcesses())
             {
                 if (string.IsNullOrWhiteSpace(p.MainWindowTitle))
@@ -95,25 +97,40 @@ namespace NoxHandle.ViewModels
 
         private void StartCapture()
         {
-            if (!IsCapturing.Value)
-            {
-                WindowCapture?.Dispose();
-                return;
-            }
-            
-            WindowCapture = new WindowCapture(WindowTitle.Value, WindowCapture.Fps30);
-            WindowCapture.Subscribe(img =>
-            {
-                if (IsBinalize.Value)
-                {
-                    img.Binalize(250);
-                }
+            StopCapture();
 
-                DispatcherHelper.UIDispatcher.Invoke(() =>
-                {
-                    ProcessedImage.Value = WindowCapture.ToImageSource(img);
-                });
+            WindowCapture = new WindowCapture(WindowTitle.Value, WindowCapture.Fps30);
+            WindowCapture.Subscribe(OnNextBitmap, OnErrorBitmap, OnCompleteBitmap);
+        }
+
+        private void StopCapture()
+        {
+            WindowCapture?.Dispose();
+            WindowCapture = null;
+        }
+
+        private void OnNextBitmap(Bitmap bitmap)
+        {
+            if (IsBinalize.Value)
+            {
+                bitmap.Binalize(250);
+            }
+
+            DispatcherHelper.UIDispatcher.Invoke(() =>
+            {
+                ProcessedImage.Value = WindowCapture.ToImageSource(bitmap);
             });
+        }
+
+        private void OnErrorBitmap(Exception e)
+        {
+
+        }
+
+        private void OnCompleteBitmap()
+        {
+            StopCapture();
+            IsCapturing.Value = false;
         }
     }
 }
