@@ -132,5 +132,12 @@ namespace NoxHandle.ViewModels
             StopCapture();
             IsCapturing.Value = false;
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            StopCapture();
+
+            base.Dispose(disposing);
+        }
     }
 }
