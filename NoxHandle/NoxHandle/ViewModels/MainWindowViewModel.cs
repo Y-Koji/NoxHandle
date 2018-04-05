@@ -72,7 +72,6 @@ namespace NoxHandle.ViewModels
         public ReactiveProperty<string> WindowTitle { get; } = new ReactiveProperty<string>();
         public ReactiveCollection<string> WindowTitleCollection { get; } = new ReactiveCollection<string>();
         public ReactiveProperty<bool> IsCapturing { get; } = new ReactiveProperty<bool>();
-        public ReactiveProperty<string> CaptureButtonText { get; set; } = new ReactiveProperty<string>("キャプチャ開始");
         public ReactiveCommand CaptureCommand { get; } = new ReactiveCommand();
         public ReactiveProperty<ImageSource> SourceImage { get; } = new ReactiveProperty<ImageSource>();
         public ReactiveProperty<ImageSource> ProcessedImage { get; } = new ReactiveProperty<ImageSource>();
@@ -98,13 +97,10 @@ namespace NoxHandle.ViewModels
         {
             if (!IsCapturing.Value)
             {
-                CaptureButtonText.Value = "キャプチャ開始";
                 WindowCapture?.Dispose();
                 return;
             }
-
-            CaptureButtonText.Value = "キャプチャ停止";
-
+            
             WindowCapture = new WindowCapture(WindowTitle.Value, WindowCapture.Fps30);
             WindowCapture.Subscribe(img =>
             {

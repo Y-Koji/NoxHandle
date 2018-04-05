@@ -47,7 +47,20 @@
             <ComboBox Grid.Column="0" IsEditable="True"
                       ItemsSource="{Binding WindowTitleCollection}" 
                       Text="{Binding WindowTitle.Value}" />
-            <ToggleButton Grid.Column="1" Content="{Binding CaptureButtonText.Value}" Command="{Binding CaptureCommand}" IsChecked="{Binding IsCapturing.Value}" />
+            <ToggleButton Grid.Column="1" Command="{Binding CaptureCommand}" IsChecked="{Binding IsCapturing.Value}">
+                <ToggleButton.Style>
+                    <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCapturing.Value}" Value="False">
+                                <Setter Property="Content" Value="キャプチャ開始" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsCapturing.Value}" Value="True">
+                                <Setter Property="Content" Value="キャプチャ停止" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ToggleButton.Style>
+            </ToggleButton>
             <ToggleButton Grid.Column="2" Content="2値化" IsChecked="{Binding IsBinalize.Value}" />
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
